@@ -2,6 +2,7 @@
 
 import { reactive } from "."
 import { hasOwn, isObject } from "../shared/utils"
+import { track, trigger } from "./effect"
 
 const get = createGetter()
 const set = createSetter()
@@ -15,7 +16,9 @@ function createGetter() {
     const res = Reflect.get(target, key, receiver)
 
     // todo...
-    console.log('用户对这个对象-取值了', target, key)
+    // console.log('用户对这个对象-取值了', target, key)
+
+    track(target, 'get', key) // 依赖收集
 
     // 如果这个key的value值还是对象或者数组 ,则递归处理
     if(isObject(res)) {
@@ -37,9 +40,11 @@ function createSetter() {
     // todo...
 
     if(!hasKey) {
-      console.log('属性的新增操作', target, key)
+      // console.log('属性的新增操作', target, key)
+      trigger(target, 'add', key, value )
     } else if(oldValue != value) {
-      console.log('修改操作', target, key)
+      // console.log('修改操作', target, key)
+      trigger(target, 'set', key, value, oldValue ) // 触发依赖更新
     }
 
     return result
